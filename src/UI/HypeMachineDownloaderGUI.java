@@ -4,6 +4,7 @@ import Data.SongsManager;
 import Models.Song;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -21,8 +22,10 @@ public class HypeMachineDownloaderGUI {
     private JButton moreButton;
     private JButton refreshButton;
     public JPanel mainForm;
+    DefaultListModel  model = new DefaultListModel();
 
-    public JList songsJlist;
+
+    public JList songsJlist = new JList(model);
     public DefaultListModel songListModel;
 
     private SongsManager songsManager = new SongsManager();
@@ -30,6 +33,11 @@ public class HypeMachineDownloaderGUI {
 
     public HypeMachineDownloaderGUI() {
 
+        for (int i = 0; i < 15; i++) {
+            model.addElement("Element " + i);
+        }
+
+        songsJlist.updateUI();
 
 
         //Buttons
@@ -49,32 +57,48 @@ public class HypeMachineDownloaderGUI {
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    ArrayList<Song> songs = songsManager.getListOfSongs();
-                    setJList( songs );
 
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
             }
         });
     }
 
 
+
+
+    int counter = 15;
+
     private void setJList( ArrayList<Song> songArrayList )
     {
 
-        SongCollectionListModel songCollectionListModel = new SongCollectionListModel( songArrayList );
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
 
-        songsJlist = new JList(songCollectionListModel);
+            }
+        });
 
-        songsJlist.setCellRenderer( new SongCellRenderer() );
 
-        songsJlist.setVisible(true);
 
-        //Just a test
-        saveDirectoryField.setText( songArrayList.get(0).artist);
+
+
+
+//        //We have "songs" at this point
+//        SongCollectionListModel songCollectionListModel = new SongCollectionListModel( songArrayList );
+//
+//        songsJlist = new JList(songCollectionListModel);
+//
+//        songsJlist.setCellRenderer( new SongCellRenderer() );
+//
+//        songsJlist.setVisible(true);
+//
+//         mainForm.invalidate();
+//
+//        //Just a test
+//        saveDirectoryField.setText( songArrayList.get(0).artist);
     }
+
+
+
 
 
 }

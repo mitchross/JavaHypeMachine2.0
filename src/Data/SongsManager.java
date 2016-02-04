@@ -5,39 +5,46 @@ import Models.Track;
 import Models.TrackListings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mpatric.mp3agic.*;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.sun.deploy.net.HttpResponse;
+import okio.BufferedSink;
+import okio.Okio;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import retrofit.http.Header;
+import sun.net.www.http.HttpClient;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.CookieManager;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
+
 
 /**
  * Created by mitchross on 8/9/15.
  */
 public class SongsManager
 {
+    public static String BASE_FILE_PATH = "";
+    private String baseUrl;
+    private String urlEncoded;
 
 
-    public ArrayList<Song> getListOfSongs() throws IOException
+    public Vector<Song> getListOfSongs( String urlToGet) throws IOException
     {
-        ArrayList<Song> songs = new ArrayList<Song>();
+        Vector<Song> songs = new Vector<Song>();
 
-
-        //TODO REMOVE THIS TEST VARIABLE and Set hardcoded 1 variable to page number
-        String baseUrl = "http://hypem.com/popular";
-        String urlEncoded = baseUrl +  "/" + 1 + "?ax=1&ts=" + (new Date()).getTime();
+        this.baseUrl = urlToGet;
 
 
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
-                .url(urlEncoded)
+                .url( buildUrlEncodedString() )
                 .build();
 
         Response response = client.newCall(request).execute();
@@ -61,6 +68,65 @@ public class SongsManager
 
 
         return songs;
+    }
+
+    private String buildUrlEncodedString()
+    {
+       return urlEncoded = baseUrl +  "/" + 1 + "?ax=1&ts=" + ( new Date() ).getTime();
+    }
+
+    public void downloadSong ( Song song )
+    {
+        //We wil download it here
+        OkHttpClient httpclient = new OkHttpClient();
+
+        Request request = new Request.Builder().addHeader( "cookie" , song.cookie).url( song.downloadURL).build();
+
+        try {
+            Response response = httpclient.newCall( request ).execute();
+
+
+            File downloadedFile = new File("songs/", song.title + ".mp3");
+
+            byte[] responseData = response.body().bytes();
+
+            FileOutputStream fos = new FileOutputStream( downloadedFile );
+
+            fos.write( responseData );
+            fos.close();
+
+            try {
+                Mp3File mp3file = new Mp3File( downloadedFile);
+
+                ID3v1 id3v1Tag;
+                if (mp3file.hasId3v1Tag()) {
+                    id3v1Tag =  mp3file.getId3v1Tag();
+                } else {
+                    // mp3 does not have an ID3v1 tag, let's create one..
+                    id3v1Tag = new ID3v1Tag();
+                    mp3file.setId3v1Tag(id3v1Tag);
+                    id3v1Tag.setArtist(song.artist);
+                    id3v1Tag.setTitle(song.title);
+                    try {
+                        mp3file.save(song.title + ".mp3");
+                    } catch (NotSupportedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } catch (UnsupportedTagException e) {
+                e.printStackTrace();
+            } catch (InvalidDataException e) {
+                e.printStackTrace();
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 
 
