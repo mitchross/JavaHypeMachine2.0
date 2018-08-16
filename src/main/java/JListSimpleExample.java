@@ -7,6 +7,8 @@ import UI.SongCellRenderer;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Set;
 import java.util.Vector;
@@ -39,7 +41,7 @@ public class JListSimpleExample extends JFrame implements ThreadCompleteListener
     private JTextField anItemTextfield;
 
     private JButton refreshSongs;
-    private JButton removeButton;
+    private JButton downloadButton;
     private JButton clearButton;
     // End of UI components declaration
 
@@ -61,7 +63,7 @@ public class JListSimpleExample extends JFrame implements ThreadCompleteListener
         anItemLabel = new JLabel("Enter URL ");
         anItemTextfield = new JTextField(20);
         refreshSongs = new JButton("Refresh");
-        removeButton = new JButton("Remove");
+        downloadButton = new JButton("Download");
         clearButton = new JButton("Clear");
 
         Container content = getContentPane();
@@ -75,7 +77,7 @@ public class JListSimpleExample extends JFrame implements ThreadCompleteListener
         JPanel eastPanel = new JPanel();
         BoxLayout verticalLayout = new BoxLayout(eastPanel, BoxLayout.Y_AXIS);
         eastPanel.setLayout(verticalLayout);
-        eastPanel.add(removeButton);
+        eastPanel.add(downloadButton);
         eastPanel.add(clearButton);
 
         content.add(topPanel, BorderLayout.NORTH);
@@ -96,6 +98,13 @@ public class JListSimpleExample extends JFrame implements ThreadCompleteListener
             }
         });
 
+        downloadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                downloadSong();
+            }
+        });
+
 
 
         pack();
@@ -104,7 +113,7 @@ public class JListSimpleExample extends JFrame implements ThreadCompleteListener
 
     private void initDisplay()
     {
-        anItemTextfield.setText( "http://hypem.com/popular");
+        anItemTextfield.setText( "https://hypem.com/popular");
 
        getListOfSongs();
 
@@ -114,8 +123,13 @@ public class JListSimpleExample extends JFrame implements ThreadCompleteListener
     private void getListOfSongs()
     {
         try {
+            if ( listModel2.size() > 0  )
+            {
+                listModel2.clear();
+            }
             listModel2 = songsManager.getListOfSongs( anItemTextfield.getText().toString() );
             //itemsList.setListData(listModel);
+
             itemsList.setCellRenderer( new SongCellRenderer());
             itemsList.setListData(listModel2);
 

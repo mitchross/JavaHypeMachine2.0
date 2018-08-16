@@ -5,6 +5,7 @@ import Models.Track;
 import Models.TrackListings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 import com.mpatric.mp3agic.*;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -54,9 +55,17 @@ public class SongsManager
         Document document = Jsoup.parse( response.body().string() );
         String trackListJSON = document.select("script#displayList-data").first().html();
         trackListJSON = trackListJSON.replace("\\", "");
-        Gson gson = new GsonBuilder().create();
+        //debug
+//        try (PrintStream out = new PrintStream(new FileOutputStream("songs.txt"))) {
+//            out.print(trackListJSON);
+//        }
 
-        TrackListings trackListings = gson.fromJson( trackListJSON, TrackListings.class);
+        Gson gson = new GsonBuilder().create();
+        JsonReader reader = new JsonReader(new StringReader(trackListJSON));
+        reader.setLenient(true);
+
+
+        TrackListings trackListings = gson.fromJson( reader, TrackListings.class);
 
         for( Track t : trackListings.tracks)
         {
